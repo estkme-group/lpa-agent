@@ -18,11 +18,12 @@ export const DeleteProfile: FC<DeleteProfileProps> = ({ profile, onClose }) => {
   const dispatch = useAppDispatch()
   const [deleting, setDeleting] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (profile.profileState === 1) return
     if (!confirmed) return
     setDeleting(true)
-    dispatch(deleteProfile(profile)).then(onClose)
+    await dispatch(deleteProfile(profile))
+    onClose()
   }
   const enabled = profile.profileState === 1
   return (

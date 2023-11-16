@@ -39,9 +39,10 @@ export const DownloadProfile: FC<Props> = ({ onClose }) => {
   const onTabChange = (key: string | null) => {
     setActiveKey(key ?? KEY_MANUALLY)
   }
-  const onDownload = () => {
+  const onDownload = async () => {
     setDownloading(true)
-    dispatch(downloadProfile({ smdp, matchingId, imei, confirmCode: code })).then(onClose)
+    await dispatch(downloadProfile({ smdp, matchingId, imei, confirmCode: code }))
+    onClose()
   }
   return (
     <Modal show onHide={onClose}>
