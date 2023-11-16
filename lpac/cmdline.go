@@ -1,10 +1,11 @@
 package lpac
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -18,16 +19,28 @@ type CommandLine struct {
 	mux     sync.Mutex
 }
 
-func (c *CommandLine) Info(ctx context.Context) (info *Information, err error) {
-	info = new(Information)
-	err = c.invoke(ctx, []string{"info"}, nil, &info)
-	return
+func (c *CommandLine) Info(ctx context.Context) (*Information, error) {
+	data, err := c.invoke(ctx, []string{"info"}, nil)
+	if err != nil {
+		return nil, err
+	}
+	var info Information
+	if err = json.Unmarshal(data, &info); err != nil {
+		return nil, err
+	}
+	return &info, nil
 }
 
-func (c *CommandLine) ListProfile(ctx context.Context) (profiles []*Profile, err error) {
-	profiles = make([]*Profile, 0)
-	err = c.invoke(ctx, []string{"profile", "list"}, nil, &profiles)
-	return
+func (c *CommandLine) ListProfile(ctx context.Context) ([]*Profile, error) {
+	data, err := c.invoke(ctx, []string{"profile", "list"}, nil)
+	if err != nil {
+		return nil, err
+	}
+	var profiles []*Profile
+	if err = json.Unmarshal(data, &profiles); err != nil {
+		return nil, err
+	}
+	return profiles, nil
 }
 
 func (c *CommandLine) SpecificProfile(ctx context.Context, iccid string) (*Profile, error) {
@@ -44,46 +57,60 @@ func (c *CommandLine) SpecificProfile(ctx context.Context, iccid string) (*Profi
 }
 
 func (c *CommandLine) SetProfileName(ctx context.Context, iccid, name string) error {
-	return c.invoke(ctx, []string{"profile", "rename", iccid, name}, nil, nil)
+	_, err := c.invoke(ctx, []string{"profile", "rename", iccid, name}, nil)
+	return err
 }
 
 func (c *CommandLine) EnableProfile(ctx context.Context, iccid string) error {
-	return c.invoke(ctx, []string{"profile", "enable", iccid}, nil, nil)
+	_, err := c.invoke(ctx, []string{"profile", "enable", iccid}, nil)
+	return err
 }
 
 func (c *CommandLine) DisableProfile(ctx context.Context, iccid string) error {
-	return c.invoke(ctx, []string{"profile", "disable", iccid}, nil, nil)
+	_, err := c.invoke(ctx, []string{"profile", "disable", iccid}, nil)
+	return err
 }
 
 func (c *CommandLine) DeleteProfile(ctx context.Context, iccid string) error {
-	return c.invoke(ctx, []string{"profile", "delete", iccid}, nil, nil)
-}
-
-func (c *CommandLine) ListNotification(ctx context.Context) (notifications []*Notification, err error) {
-	notifications = make([]*Notification, 0)
-	err = c.invoke(ctx, []string{"notification", "list"}, nil, &notifications)
-	return
-}
-
-func (c *CommandLine) SpecificNotification(ctx context.Context, index int) (*Notification, error) {
 	notifications, err := c.ListNotification(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = c.invoke(ctx, []string{"profile", "delete", iccid}, nil)
+	if err != nil {
+		return err
+	}
+	for _, notification := range notifications {
+		if err = c.ProcessNotification(ctx, notification.Index); err != nil {
+			continue
+		}
+		if err = c.RemoveNotification(ctx, notification.Index); err != nil {
+			continue
+		}
+	}
+	return nil
+}
+
+func (c *CommandLine) ListNotification(ctx context.Context) ([]*Notification, error) {
+	data, err := c.invoke(ctx, []string{"notification", "list"}, nil)
 	if err != nil {
 		return nil, err
 	}
-	for _, notification := range notifications {
-		if notification.Index == index {
-			return notification, nil
-		}
+	var notifications []*Notification
+	if err = json.Unmarshal(data, &notifications); err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return notifications, nil
 }
 
 func (c *CommandLine) ProcessNotification(ctx context.Context, index int) error {
-	return c.invoke(ctx, []string{"notification", "process", strconv.Itoa(index)}, nil, nil)
+	_, err := c.invoke(ctx, []string{"notification", "process", strconv.Itoa(index)}, nil)
+	return err
 }
 
 func (c *CommandLine) RemoveNotification(ctx context.Context, index int) error {
-	return c.invoke(ctx, []string{"notification", "remove", strconv.Itoa(index)}, nil, nil)
+	_, err := c.invoke(ctx, []string{"notification", "remove", strconv.Itoa(index)}, nil)
+	return err
 }
 
 type DownloadProfile struct {
@@ -94,82 +121,76 @@ type DownloadProfile struct {
 }
 
 func (c *CommandLine) DownloadProfile(ctx context.Context, cfg *DownloadProfile) error {
-	var envs []string
-	if cfg.SMDP != "" {
-		envs = append(envs, "SMDP="+cfg.SMDP)
+	notifications, err := c.ListNotification(ctx)
+	if err != nil {
+		return err
 	}
-	if cfg.MatchingId != "" {
-		envs = append(envs, "MATCHINGID="+cfg.MatchingId)
+	_, err = c.invoke(ctx, []string{"download"}, map[string]string{
+		"SMDP":              cfg.SMDP,
+		"MATCHINGID":        cfg.MatchingId,
+		"IMEI":              cfg.IMEI,
+		"CONFIRMATION_CODE": cfg.ConfirmCode,
+	})
+	if err != nil {
+		return err
 	}
-	if cfg.IMEI != "" {
-		envs = append(envs, "IMEI="+cfg.IMEI)
+	for _, notification := range notifications {
+		if err = c.ProcessNotification(ctx, notification.Index); err != nil {
+			continue
+		}
+		if err = c.RemoveNotification(ctx, notification.Index); err != nil {
+			continue
+		}
 	}
-	if cfg.ConfirmCode != "" {
-		envs = append(envs, "CONFIRMATION_CODE="+cfg.ConfirmCode)
-	}
-	return c.invoke(ctx, []string{"download"}, envs, nil)
+	return nil
 }
 
 func (c *CommandLine) SetDefaultSMDP(ctx context.Context, smdp string) error {
-	return c.invoke(ctx, []string{"defaultsmdp", smdp}, nil, nil)
+	_, err := c.invoke(ctx, []string{"defaultsmdp", smdp}, nil)
+	return err
 }
 
 func (c *CommandLine) Purge(ctx context.Context) error {
-	return c.invoke(ctx, []string{"purge", "yes"}, nil, nil)
+	_, err := c.invoke(ctx, []string{"purge", "yes"}, nil)
+	return err
 }
 
 func (c *CommandLine) Discovery(ctx context.Context, smdp, imei string) error {
-	var envs []string
-	if smdp != "" {
-		envs = append(envs, "SMDP="+smdp)
-	}
-	if imei != "" {
-		envs = append(envs, "IMEI="+imei)
-	}
-	return c.invoke(ctx, []string{"discovery"}, envs, nil)
+	_, err := c.invoke(ctx, []string{"discovery"}, map[string]string{
+		"SMDP": smdp,
+		"IMEI": imei,
+	})
+	return err
 }
 
-func (c *CommandLine) invoke(ctx context.Context, args, envs []string, data any) error {
-	if !c.mux.TryLock() {
-		return errors.New("lpac: cannot be called concurrently")
-	}
+func (c *CommandLine) invoke(ctx context.Context, args []string, envs map[string]string) (json.RawMessage, error) {
+	c.mux.Lock()
 	defer c.mux.Unlock()
+	var stdout bytes.Buffer
 	cmd := exec.CommandContext(ctx, c.Program, args...)
-	cmd.Dir = path.Base(cmd.Path)
+	cmd.Dir = path.Dir(cmd.Path)
 	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
-	cmd.Env = append(cmd.Env, envs...)
+	cmd.Stdout = &stdout
+	log.Println(cmd.String())
+	for name, value := range envs {
+		if value == "" {
+			continue
+		}
+		cmd.Env = append(cmd.Env, name+"="+value)
+	}
 	for name, value := range c.EnvMap {
 		cmd.Env = append(cmd.Env, name+"="+value)
 	}
-	stdout, err := cmd.Output()
-	if err != nil {
-		return fmt.Errorf("lpac: %s", string(stdout))
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("lpac: %w", err)
 	}
-	type lpaPayload struct {
-		Code    int             `json:"code"`
-		Message string          `json:"message"`
-		Data    json.RawMessage `json:"data"`
+	var resp lpaResponse
+	if err := json.NewDecoder(&stdout).Decode(&resp); err != nil {
+		return nil, err
 	}
-	type lpaResponse struct {
-		Type    string      `json:"type"`
-		Payload *lpaPayload `json:"payload"`
+	if p := resp.Payload; p.Code == -1 {
+		return nil, fmt.Errorf("lpac: %w", &Error{Message: p.Message, Details: p.Data})
 	}
-	var response lpaResponse
-	if err = json.Unmarshal(stdout, &response); err != nil {
-		return err
-	}
-	if response.Type != "lpa" {
-		return errors.New("lpac: type error")
-	}
-	if p := response.Payload; p.Code == -1 {
-		if p.Data == nil {
-			return fmt.Errorf("lpac: %s", p.Message)
-		}
-		return fmt.Errorf("lpac: %s (%s)", p.Message, string(p.Data))
-	}
-	if data == nil {
-		return nil
-	}
-	return json.Unmarshal(response.Payload.Data, data)
+	return resp.Payload.Data, nil
 }
