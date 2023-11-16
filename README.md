@@ -6,6 +6,7 @@ Write to `config.json`
 
 ```json
 {
+  "listen": ":9527",
   "program": "./lpac",
   "env": {
     "APDU_INTERFACE": "./libapduinterface_pcsc.so",
