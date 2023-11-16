@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -168,11 +167,12 @@ func (c *CommandLine) invoke(ctx context.Context, args []string, envs map[string
 	defer c.mux.Unlock()
 	var stdout bytes.Buffer
 	cmd := exec.CommandContext(ctx, c.Program, args...)
-	cmd.Dir = path.Dir(cmd.Path)
+	if path.IsAbs(cmd.Path) {
+		cmd.Dir = path.Dir(cmd.Path)
+	}
 	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = &stdout
-	log.Println(cmd.String())
 	for name, value := range envs {
 		if value == "" {
 			continue
