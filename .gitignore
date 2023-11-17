@@ -1,6 +1,10 @@
 dist/
 vendor/
 .DS_Store
+<<<<<<< HEAD
 .idea
 .vscode
 lpac-cli
+=======
+vendor/
+>>>>>>> e14ddbe (chore: don't sync vendor)
