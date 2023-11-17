@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	githubVersionApi          = "https://api.github.com/repos/estkme/lpac/releases/latest"
-	githubReleaseDownloadLink = "https://github.com/estkme/lpac/releases/download/%s/%s"
+	githubVersionApi          = "https://api.github.com/repos/estkme-group/lpac/releases/latest"
+	githubReleaseDownloadLink = "https://github.com/estkme-group/lpac/releases/download/%s/%s"
 	localVersionFile          = "version"
 )
 
@@ -72,7 +72,7 @@ func assetName() string {
 	// TODO: support by arch
 	switch runtime.GOOS {
 	case "windows":
-		return "lpac_windows_x86_64.zip"
+		return "lpac-windows-x86_64.zip"
 	case "darwin":
 		return "lpac-macos-universal.zip"
 	default:
