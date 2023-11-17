@@ -33,10 +33,6 @@ type GitHubRelease struct {
 }
 
 func fetchRelease() (*GitHubRelease, error) {
-	return &GitHubRelease{
-		TagName: "v0.0.3-alpha",
-	}, nil
-
 	httpClient := http.Client{
 		Timeout: 5 * time.Second,
 	}
