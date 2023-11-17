@@ -1,24 +1,21 @@
 # LPA Agent
 
 ## Quick Start
-
-Write to `config.json`
-
-```json
-{
-  "listen": ":9527",
-  "program": "./lpac",
-  "env": {
-    "APDU_INTERFACE": "./libapduinterface_pcsc.so",
-    "HTTP_INTERFACE": "./libhttpinterface_curl.so"
-  }
-}
-```
-
 Run the program
 
 ```bash
-./lpa-agent -c config.json
+./lpa-agent --help
+Usage of lpac-agent:
+  -download
+        download lpac (default true)
+  -listen string
+        listen address (default ":9527")
+  -lpac-dir string
+        lpac directory (default "/home/user/workspace/lpa-agent/lpac-cli")
+  -reader string
+        pscs or at (default "pcsc")
+  -readerName string
+        reader name
 ```
 
 ## References
