@@ -38,11 +38,12 @@ jobs:
           cd frontend
           npm install
           npm run build
+          cd ..
           
       - name: Build backend
         run: |
           go mod tidy
-          go generate ./...
+          go mod vendor
           CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
           chmod +x lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
 
