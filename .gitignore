@@ -1,15 +1,6 @@
-dist/
-<<<<<<< HEAD
-=======
+dist
 lpac-cli
-.DS_Store
->>>>>>> 0d9746d (fix: don't ignore lpac)
-vendor/
-.DS_Store
-<<<<<<< HEAD
-.idea
 .vscode
-lpac-cli
-=======
-vendor/
->>>>>>> e14ddbe (chore: don't sync vendor)
+.idea
+.DS_Store
+vendor
