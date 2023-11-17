@@ -31,7 +31,7 @@ func init() {
 	flag.StringVar(&listen, "listen", ":9527", "listen address")
 	flag.StringVar(&lpacDir, "lpac-dir", filepath.Join(workDir, "lpac-cli"), "lpac directory")
 	flag.BoolVar(&download, "download", true, "download lpac")
-	flag.StringVar(&reader, "reader", "pcsc", "pscs or at")
+	flag.StringVar(&reader, "reader", "pcsc", "pcsc or at")
 	flag.StringVar(&readerName, "readerName", "", "reader name")
 	flag.Parse()
 }
