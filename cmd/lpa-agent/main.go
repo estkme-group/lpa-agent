@@ -60,7 +60,6 @@ func envs() map[string]string {
 	if runtime.GOOS == "windows" {
 		envs["LIBCURL"] = filepath.Join(lpacDir, "libcurl.dll")
 	}
-
 	return envs
 }
 
