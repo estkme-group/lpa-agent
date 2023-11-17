@@ -2,10 +2,11 @@ package main
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/esimclub/lpa-agent/lpac"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"net/http"
 )
 
 func NewAPIHTTPHandler(cmdline *lpac.CommandLine) http.Handler {

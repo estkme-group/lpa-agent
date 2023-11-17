@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -182,6 +183,7 @@ func (c *CommandLine) invoke(ctx context.Context, args []string, envs map[string
 	for name, value := range c.EnvMap {
 		cmd.Env = append(cmd.Env, name+"="+value)
 	}
+	slog.Info("lpac: cmd executed", "cmd", cmd.String(), "lpacEnv", c.EnvMap, "env", envs)
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("lpac: %w", err)
 	}
@@ -190,6 +192,7 @@ func (c *CommandLine) invoke(ctx context.Context, args []string, envs map[string
 		return nil, err
 	}
 	if p := resp.Payload; p.Code == -1 {
+		slog.Error("lpac: error", "message", p.Message, "details", string(p.Data))
 		return nil, fmt.Errorf("lpac: %w", &Error{Message: p.Message, Details: p.Data})
 	}
 	return resp.Payload.Data, nil
