@@ -208,7 +208,22 @@ func decompress(path string) error {
 	return tarx(path)
 }
 
+func isSupportedArch() bool {
+	switch runtime.GOOS {
+	case "windows":
+		return runtime.GOARCH == "amd64" || runtime.GOARCH == "386"
+	case "darwin":
+		return true
+	default:
+		return runtime.GOARCH == "amd64" || runtime.GOARCH == "386"
+	}
+}
+
 func Download(lpacDir string) error {
+	if !isSupportedArch() {
+		return fmt.Errorf("not supported arch yet: %s %s", runtime.GOOS, runtime.GOARCH)
+	}
+
 	githubRelease, err := fetchRelease()
 	if err != nil {
 		return err
