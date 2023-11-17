@@ -1,4 +1,9 @@
 dist/
+<<<<<<< HEAD
+=======
+lpac-cli
+.DS_Store
+>>>>>>> 0d9746d (fix: don't ignore lpac)
 vendor/
 .DS_Store
 <<<<<<< HEAD
