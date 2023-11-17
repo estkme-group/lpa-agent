@@ -13,7 +13,7 @@ Usage of lpac-agent:
   -lpac-dir string
         lpac directory (default "/home/user/workspace/lpa-agent/lpac-cli")
   -reader string
-        pscs or at (default "pcsc")
+        pcsc or at (default "pcsc")
   -readerName string
         reader name
 ```
