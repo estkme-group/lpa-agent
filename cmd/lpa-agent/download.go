@@ -106,13 +106,8 @@ func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
 	if err != nil {
 		return err
 	}
-
 	if err = decompress(destPath); err != nil {
 		return err
-	}
-
-	if err := os.Remove(destPath); err != nil {
-		slog.Warn("remove lpac archive failed", "err", err.Error())
 	}
 	return os.WriteFile(filepath.Join(dir, localVersionFile), []byte(githubRelease.TagName), 0644)
 }
