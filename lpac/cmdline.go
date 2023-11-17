@@ -5,10 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-<<<<<<< HEAD
-	"log"
-=======
->>>>>>> 0d9746d (fix: don't ignore lpac)
 	"os"
 	"os/exec"
 	"path"
@@ -83,9 +79,6 @@ func (c *CommandLine) DeleteProfile(ctx context.Context, iccid string) error {
 	if err != nil {
 		return err
 	}
-<<<<<<< HEAD
-	c.handleNotification(ctx, notifications)
-=======
 	for _, notification := range notifications {
 		if err = c.ProcessNotification(ctx, notification.Index); err != nil {
 			continue
@@ -94,7 +87,6 @@ func (c *CommandLine) DeleteProfile(ctx context.Context, iccid string) error {
 			continue
 		}
 	}
->>>>>>> 0d9746d (fix: don't ignore lpac)
 	return nil
 }
 
@@ -110,21 +102,6 @@ func (c *CommandLine) ListNotification(ctx context.Context) ([]*Notification, er
 	return notifications, nil
 }
 
-<<<<<<< HEAD
-func (c *CommandLine) handleNotification(ctx context.Context, notifications []*Notification) {
-	var err error
-	for _, notification := range notifications {
-		if err = c.ProcessNotification(ctx, notification.Index); err != nil {
-			continue
-		}
-		if err = c.RemoveNotification(ctx, notification.Index); err != nil {
-			continue
-		}
-	}
-}
-
-=======
->>>>>>> 0d9746d (fix: don't ignore lpac)
 func (c *CommandLine) ProcessNotification(ctx context.Context, index int) error {
 	_, err := c.invoke(ctx, []string{"notification", "process", strconv.Itoa(index)}, nil)
 	return err
@@ -156,9 +133,6 @@ func (c *CommandLine) DownloadProfile(ctx context.Context, cfg *DownloadProfile)
 	if err != nil {
 		return err
 	}
-<<<<<<< HEAD
-	c.handleNotification(ctx, notifications)
-=======
 	for _, notification := range notifications {
 		if err = c.ProcessNotification(ctx, notification.Index); err != nil {
 			continue
@@ -167,7 +141,6 @@ func (c *CommandLine) DownloadProfile(ctx context.Context, cfg *DownloadProfile)
 			continue
 		}
 	}
->>>>>>> 0d9746d (fix: don't ignore lpac)
 	return nil
 }
 
@@ -200,10 +173,6 @@ func (c *CommandLine) invoke(ctx context.Context, args []string, envs map[string
 	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = &stdout
-<<<<<<< HEAD
-	log.Println(cmd.String())
-=======
->>>>>>> 0d9746d (fix: don't ignore lpac)
 	for name, value := range envs {
 		if value == "" {
 			continue

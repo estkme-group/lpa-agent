@@ -1,12 +1,8 @@
 package lpac
 
-<<<<<<< HEAD
 import (
 	"encoding/json"
 )
-=======
-import "encoding/json"
->>>>>>> 0d9746d (fix: don't ignore lpac)
 
 type lpaResponse struct {
 	Type    string      `json:"type"`
