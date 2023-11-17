@@ -50,7 +50,7 @@ func dylibWithExtension(filename string) string {
 func envs() map[string]string {
 	envs := map[string]string{
 		"HTTP_INTERFACE": filepath.Join(lpacDir, dylibWithExtension("libhttpinterface_curl")),
-		"APDU_READER":    filepath.Join(lpacDir, dylibWithExtension(fmt.Sprintf("libapduinterface_%s", reader))),
+		"APDU_INTERFACE": filepath.Join(lpacDir, dylibWithExtension(fmt.Sprintf("libapduinterface_%s", reader))),
 	}
 
 	if reader == "at" {
