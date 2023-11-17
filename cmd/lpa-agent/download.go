@@ -98,6 +98,11 @@ func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
 	}
 
 	destPath := filepath.Join(dir, assetName())
+	if f, err := os.Stat(destPath); err == nil && f.Size() > 0 {
+		if err := os.Remove(destPath); err != nil {
+			return err
+		}
+	}
 	out, err := os.Create(destPath)
 	if err != nil {
 		return err
@@ -112,9 +117,6 @@ func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
 		return err
 	}
 
-	if err := os.Remove(destPath); err != nil {
-		return err
-	}
 	return writeVersionFile(dir, githubRelease.TagName)
 }
 
