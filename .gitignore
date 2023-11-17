@@ -1,1 +1,4 @@
 dist/
+lpac
+lpac-cli
+.DS_Store

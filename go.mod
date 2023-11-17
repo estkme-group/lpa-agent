@@ -3,6 +3,7 @@ module github.com/esimclub/lpa-agent
 go 1.21.3
 
 require (
+	github.com/hashicorp/go-version v1.6.0
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/labstack/gommon v0.4.1
 )
