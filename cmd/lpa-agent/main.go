@@ -8,18 +8,18 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/esimclub/lpa-agent/frontend"
 	"github.com/esimclub/lpa-agent/lpac"
 )
 
 var (
-	listen       string
-	lpacDir      string
-	download     bool
-	forceReplace bool
-	reader       string
-	readerName   string
+	listen     string
+	lpacDir    string
+	download   bool
+	reader     string
+	readerName string
 )
 
 func init() {
@@ -63,6 +63,10 @@ func lpacProgram() string {
 	if runtime.GOOS == "windows" {
 		return filepath.Join(lpacDir, "lpac.exe")
 	}
+
+	if err := os.Chmod(filepath.Join(lpacDir, "lpac"), 0755); err != nil {
+		panic(err)
+	}
 	return filepath.Join(lpacDir, "lpac")
 }
 
@@ -80,7 +84,14 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/api/lpa/", http.StripPrefix("/api/lpa", lpaApiHandler))
 	mux.Handle("/", http.FileServer(http.FS(frontend.DistFS())))
-	slog.Info("listen on", "lisnte", listen, "lpacDir", lpacDir, "download", download, "forceReplace", forceReplace, "reader", reader, "readerName", readerName)
+
+	slog.Info("lpac-agent has started", "listen", listen, "lpacDir", lpacDir, "download", download, "reader", reader, "readerName", readerName)
+	if strings.Contains(listen, ".") {
+		slog.Info(fmt.Sprintf("please visit http://%s", listen))
+	} else {
+		slog.Info(fmt.Sprintf("please visit http://127.0.0.1:%s", strings.TrimLeft(listen, ":")))
+	}
+
 	if err := http.ListenAndServe(listen, mux); err != nil {
 		panic(err)
 	}
