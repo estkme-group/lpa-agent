@@ -39,12 +39,12 @@ jobs:
           npm install
           npm run build
           cd ..
-          
+
       - name: Build backend
         run: |
           go mod tidy
           go mod vendor
-          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }} cmd/lpa-agent/*.go
           chmod +x lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Upload Artifact
