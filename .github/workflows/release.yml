@@ -53,18 +53,18 @@ jobs:
         run: |
           go mod tidy
           go mod vendor
-          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}$OS_EXTENSION cmd/lpa-agent/*.go
-          chmod +x lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}$OS_EXTENSION
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}${{ env.OS_EXTENSION }} cmd/lpa-agent/*.go
+          chmod +x lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}${{ env.OS_EXTENSION }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}$OS_EXTENSION
-          path: lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}$OS_EXTENSION
+          name: lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}${{ env.OS_EXTENSION }}
+          path: lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}${{ env.OS_EXTENSION }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}$OS_EXTENSION
+            lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}${{ env.OS_EXTENSION }}
