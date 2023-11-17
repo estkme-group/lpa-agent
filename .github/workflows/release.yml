@@ -42,18 +42,18 @@ jobs:
 
       - name: Build
         run: |
-          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o telegram-sms-${{ matrix.goos }}-${{ matrix.goarch }}
-          chmod +x telegram-sms-${{ matrix.goos }}-${{ matrix.goarch }}
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-w -s" -o lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
+          chmod +x lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: telegram-sms-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: telegram-sms-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            telegram-sms-${{ matrix.goos }}-${{ matrix.goarch }}
+            lpac-agent-${{ matrix.goos }}-${{ matrix.goarch }}
