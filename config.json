@@ -1,7 +1,0 @@
-{
-  "program": "/home/septs/Projects/lpac/build/output/lpac",
-  "env": {
-    "APDU_INTERFACE": "./libapduinterface_pcsc.so",
-    "HTTP_INTERFACE": "./libhttpinterface_curl.so"
-  }
-}
