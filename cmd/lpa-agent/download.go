@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-version"
@@ -32,6 +33,10 @@ type GitHubRelease struct {
 }
 
 func fetchRelease() (*GitHubRelease, error) {
+	return &GitHubRelease{
+		TagName: "v0.0.3-alpha",
+	}, nil
+
 	httpClient := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -57,7 +62,7 @@ func shouldDownload(lpacDir string, targetVersion string) (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	localVersion, err := version.NewVersion(string(b))
+	localVersion, err := version.NewVersion(strings.TrimRight(string(b), "\n"))
 	if err != nil {
 		return true, err
 	}
@@ -81,6 +86,10 @@ func assetName() string {
 }
 
 func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
+	if err = cleanup(dir); err != nil {
+		return err
+	}
+
 	downloadUrl := fmt.Sprintf(githubReleaseDownloadLink, githubRelease.TagName, assetName())
 	resp, err := http.Get(downloadUrl)
 	if err != nil {
@@ -91,18 +100,7 @@ func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
 		return fmt.Errorf("download lpac failed, status code: %d", resp.StatusCode)
 	}
 
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return err
-		}
-	}
-
 	destPath := filepath.Join(dir, assetName())
-	if f, err := os.Stat(destPath); err == nil && f.Size() > 0 {
-		if err := os.Remove(destPath); err != nil {
-			return err
-		}
-	}
 	out, err := os.Create(destPath)
 	if err != nil {
 		return err
@@ -117,11 +115,35 @@ func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
 		return err
 	}
 
-	return writeVersionFile(dir, githubRelease.TagName)
+	if err := os.Remove(destPath); err != nil {
+		slog.Warn("remove lpac archive failed", "err", err.Error())
+	}
+	return os.WriteFile(filepath.Join(dir, localVersionFile), []byte(githubRelease.TagName), 0644)
 }
 
-func writeVersionFile(dir string, version string) error {
-	return os.WriteFile(filepath.Join(dir, localVersionFile), []byte(version), 0644)
+func cleanup(dir string) error {
+	finfo, err := os.Stat(dir)
+	if err != nil && os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	} else {
+		return err
+	}
+
+	if err == nil {
+		if !finfo.IsDir() {
+			return fmt.Errorf("lpac-dir %s is not a directory", dir)
+		} else {
+			if err := os.RemoveAll(dir); err != nil {
+				return err
+			}
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func unzip(path string) error {
@@ -129,18 +151,12 @@ func unzip(path string) error {
 	if err != nil {
 		return err
 	}
+	defer archive.Close()
 
 	targetPath := filepath.Dir(path)
 	for _, file := range archive.File {
 		if file.FileInfo().IsDir() {
 			continue
-		}
-
-		targetFilePath := filepath.Join(targetPath, file.Name)
-		if _, err := os.Stat(targetFilePath); os.IsExist(err) {
-			if err := os.Remove(targetFilePath); err != nil {
-				return fmt.Errorf("unzip: Remove() failed: %s", err.Error())
-			}
 		}
 
 		outFile, err := os.Create(filepath.Join(targetPath, file.Name))
@@ -171,6 +187,8 @@ func tarx(path string) error {
 	if err != nil {
 		return err
 	}
+	defer archive.Close()
+	defer tarFile.Close()
 
 	tarReader := tar.NewReader(archive)
 	targetPath := filepath.Dir(path)
@@ -188,12 +206,6 @@ func tarx(path string) error {
 			continue
 		}
 
-		targetFilePath := filepath.Join(targetPath, header.Name)
-		if _, err := os.Stat(targetFilePath); os.IsExist(err) {
-			if err := os.Remove(targetFilePath); err != nil {
-				return fmt.Errorf("tarx: Remove() failed: %s", err.Error())
-			}
-		}
 		outFile, err := os.Create(filepath.Join(targetPath, header.Name))
 		if err != nil {
 			return fmt.Errorf("tarx: Create() failed: %s", err.Error())
@@ -203,7 +215,6 @@ func tarx(path string) error {
 		}
 		outFile.Close()
 	}
-
 	return nil
 }
 
