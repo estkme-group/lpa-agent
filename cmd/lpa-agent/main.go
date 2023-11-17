@@ -56,6 +56,11 @@ func envs() map[string]string {
 	if reader == "at" {
 		envs["AT_DEVICE"] = readerName
 	}
+
+	if runtime.GOOS == "windows" {
+		envs["LIBCURL"] = filepath.Join(lpacDir, "libcurl.dll")
+	}
+
 	return envs
 }
 
