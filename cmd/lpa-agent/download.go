@@ -111,6 +111,10 @@ func downloadFile(dir string, githubRelease *GitHubRelease) (err error) {
 	if err = decompress(destPath); err != nil {
 		return err
 	}
+
+	if err := os.Remove(destPath); err != nil {
+		return err
+	}
 	return writeVersionFile(dir, githubRelease.TagName)
 }
 
