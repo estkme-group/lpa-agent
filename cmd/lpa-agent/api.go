@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/esimclub/lpa-agent/lpac"
+	"github.com/estkme-group/lpa-agent/lpac"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )

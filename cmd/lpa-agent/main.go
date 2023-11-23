@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/esimclub/lpa-agent/frontend"
-	"github.com/esimclub/lpa-agent/lpac"
+	"github.com/estkme-group/lpa-agent/frontend"
+	"github.com/estkme-group/lpa-agent/lpac"
 )
 
 var (
